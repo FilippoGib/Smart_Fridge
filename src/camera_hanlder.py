@@ -4,6 +4,9 @@ from pyzbar.pyzbar import decode
 import requests
 import os
 
+from utility.camera_handler_utils import preprocess_image, find_product
+
+
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
 ip_address = "https://172.20.10.7:4343/video"
 
@@ -24,18 +27,26 @@ class CameraHandler():
 
         print("Camera acquired successfully")
 
-        data = self.detecting()
+        product_data = self.detecting_product_data()
         
-        if data:
-            print("Product data:", data.get('name'))
+        if product_data:
+            print("Product data: ", product_data.get('name'))
         else:
             print("Something went horribly wrong...")
-            return
+        
+        expiry_date = self.detecting_product_expiry_date()
+
+        if expiry_date:
+            print("Product expiry date: ", expiry_date)
+        else:
+            print("No date found, it's alright")
+        
+
         print("Execution Terminated Successfully!")
 
 
 
-    def detecting(self):
+    def detecting_product_data(self):
         while True:
             ret, frame = self.cap.read()
 
@@ -44,10 +55,10 @@ class CameraHandler():
                 break
 
             # Apply preprocessing before decoding
-            processed_frame = self.preprocess_image(frame)
+            processed_frame = preprocess_image(frame)
 
             cv2.imshow('Processed Camera Feed', processed_frame)
-            product_data = self.decoding(processed_frame)
+            product_data = self.decode_frame(processed_frame)
             if product_data:
                 self.cap.release()
                 cv2.destroyAllWindows()
@@ -61,70 +72,21 @@ class CameraHandler():
         self.cap.release()
         cv2.destroyAllWindows()
         return None
+    
+
+    def detecting_product_expiry_date(self):
+        return False
 
 
-    def preprocess_image(self, img):
-        # Convert to grayscale
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Apply Gaussian Blur
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        
-        # Sharpen the image
-        sharpened = cv2.addWeighted(gray, 1.5, blurred, -0.5, 0)
-        
-        # Apply adaptive thresholding to enhance barcode lines
-        #thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        
-        # Resize the image for better readability
-        scale_percent = 100  # Increase the image size by 150%
-        width = int(sharpened.shape[1] * scale_percent / 100)
-        height = int(sharpened.shape[0] * scale_percent / 100)
-        resized = cv2.resize(sharpened, (width, height), interpolation=cv2.INTER_LINEAR)
-
-        return resized
-
-
-    def find_product(self, barcode):
-        # Request URL to OpenFoodFacts API
-        url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('status') == 1:  # Status 1 means the product was found
-                product = data['product']
-                return {
-                    "name": product.get("product_name", "Not available"),
-                    "brand": product.get("brands", "Not available"),
-                    "categories": product.get("categories", "Not available"),
-                    "ingredients": product.get("ingredients_text", "Not available"),
-                    "nutrition": product.get("nutriments", "Not available"),
-                    "image": product.get("image_url", "Not available")
-                }
-            else:
-                print("Product not found.")
-                return None
-        else:
-            print(f"Request error: {response.status_code}")
-            return None
-
-
-    def decoding(self, img):
-        decoded_data = decode(img)
-        if not decoded_data:
+    def decode_frame(self, frame):
+        decoded_product_data = decode(frame)
+        if not decoded_product_data:
             print("No data in this frame")
             return None
 
-        barcode = decoded_data[0].data.decode("utf-8")
+        barcode = decoded_product_data[0].data.decode("utf-8")
         print('Barcode found: ' + barcode)
-        product = self.find_product(barcode)
+        product = find_product(barcode)
         return product
 
 
-def main():
-    CH = CameraHandler()
-
-
-if __name__ == "__main__":
-    main()

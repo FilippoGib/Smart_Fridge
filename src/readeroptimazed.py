@@ -1,9 +1,13 @@
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
 import cv2
 import easyocr
 import re
 from datetime import datetime
+
+ip_address = "https://172.20.10.6:4343/video" #cambiare secondo necessità, devi essere sullo stesso wi-fi del telefono, no eduroam
+
 
 class ExpirationDateReader:
     def __init__(self, use_gpu=False):
@@ -116,7 +120,7 @@ class ExpirationDateReader:
 
     def read_date_from_camera(self):
         """Apre la fotocamera, applica OCR, e cerca una data di scadenza."""
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(ip_address)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         print("Rilevamento automatico della data di scadenza. Premi 'q' per uscire.")
@@ -127,6 +131,8 @@ class ExpirationDateReader:
 
         while not expiration_date_found:
             ret, frame = cap.read()
+            crop_height = 50 #pixels
+            frame = frame[crop_height:, :]
             if not ret:
                 print("Errore nell'aprire la fotocamera.")
                 break
@@ -144,13 +150,12 @@ class ExpirationDateReader:
                         roi = frame[y:y+h, x:x+w]
                         results = self.reader.readtext(roi)
                         detected_text = " ".join([res[1] for res in results])
-                        print("Testo rilevato:", detected_text)
+                        print("Testo rilevato: ", detected_text)
 
                         expiration_date = self.find_expiration_date(detected_text)
                         if expiration_date:
-                            print("Data di scadenza rilevata:", expiration_date)
-                            expiration_date_found = True
-                            break
+                            print("Data di scadenza rilevata: ", expiration_date)
+                            return expiration_date
 
             frame_count += 1
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -163,10 +168,11 @@ class ExpirationDateReader:
 # reader = ExpirationDateReader(use_gpu=False)
 # reader.read_date_from_camera()
 # Punto di ingresso principale
-if __name__ == "__main__":
-    # Creiamo un'istanza della classe ExpirationDateReader
-    reader = ExpirationDateReader(use_gpu=False)
-    reader.read_date_from_camera()
+
+# if __name__ == "__main__":
+#     # Creiamo un'istanza della classe ExpirationDateReader
+#     reader = ExpirationDateReader(use_gpu=False)
+#     reader.read_date_from_camera()
 
 
 """import os

@@ -16,8 +16,8 @@ class CameraHandler():
     #constructor
     def __init__(self):
         self.cap = cv2.VideoCapture(ip_address)
-
-        self.start()
+        print("Camera Hadler ready to start!")
+        #self.start()
 
 
     def start(self):
@@ -31,19 +31,10 @@ class CameraHandler():
         
         if product_data:
             print("Product data: ", product_data.get('name'))
+            return product_data
         else:
             print("Product data could not be retreived")
-        
-        expiry_date = self.detecting_product_expiry_date()
-
-        if expiry_date:
-            print("Product expiry date: ", expiry_date)
-        else:
-            print("No date found, it's alright")
-        
-
-        print("Execution Terminated Successfully!")
-
+            return None
 
 
     def detecting_product_data(self):

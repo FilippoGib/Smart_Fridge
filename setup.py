@@ -8,7 +8,11 @@ setup(
     description="An IoT-based smart fridge project",  # Short description
     author="Filippo Gibertini",                    # Your name or organization
     author_email="...", # Your contact email
-    packages=find_packages(),              # Automatically find all packages
+    packages=find_packages(where="."),              # Automatically find all packages
+    package_dir={
+        'src': 'src',
+        'utility': 'utility',
+    },
     install_requires=[
         'opencv-python', 
         'requests',

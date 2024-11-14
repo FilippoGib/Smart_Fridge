@@ -4,11 +4,11 @@ from pyzbar.pyzbar import decode
 import requests
 import os
 
-from utility.camera_handler_utils import preprocess_image, find_product
+from utility.camera_handler_utils import preprocess_image, decode_frame_barcode
 
 
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
-ip_address = "https://172.20.10.7:4343/video"
+ip_address = "https://172.20.10.6:4343/video" #cambiare secondo necessità, devi essere sullo stesso wi-fi del telefono, no eduroam
 
 
 class CameraHandler():
@@ -32,7 +32,7 @@ class CameraHandler():
         if product_data:
             print("Product data: ", product_data.get('name'))
         else:
-            print("Something went horribly wrong...")
+            print("Product data could not be retreived")
         
         expiry_date = self.detecting_product_expiry_date()
 
@@ -58,7 +58,7 @@ class CameraHandler():
             processed_frame = preprocess_image(frame)
 
             cv2.imshow('Processed Camera Feed', processed_frame)
-            product_data = self.decode_frame(processed_frame)
+            product_data = decode_frame_barcode(processed_frame)
             if product_data:
                 self.cap.release()
                 cv2.destroyAllWindows()
@@ -78,15 +78,6 @@ class CameraHandler():
         return False
 
 
-    def decode_frame(self, frame):
-        decoded_product_data = decode(frame)
-        if not decoded_product_data:
-            print("No data in this frame")
-            return None
-
-        barcode = decoded_product_data[0].data.decode("utf-8")
-        print('Barcode found: ' + barcode)
-        product = find_product(barcode)
-        return product
+    
 
 

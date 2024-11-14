@@ -49,3 +49,15 @@ def find_product(barcode):
         else:
             print(f"Request error: {response.status_code}")
             return None
+        
+    
+def decode_frame_barcode(frame):
+    decoded_product_data = decode(frame)
+    if not decoded_product_data:
+        print("No data in this frame")
+        return None
+
+    barcode = decoded_product_data[0].data.decode("utf-8")
+    print('Barcode found: ' + barcode)
+    product = find_product(barcode)
+    return product

@@ -10,12 +10,13 @@ from utility.camera_handler_utils import preprocess_image, decode_frame_barcode
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
 ip_address = "https://172.20.10.6:4343/video" #cambiare secondo necessità, devi essere sullo stesso wi-fi del telefono, no eduroam
 
-
 class CameraHandler():
     
     #constructor
     def __init__(self):
-        self.cap = cv2.VideoCapture(ip_address)
+        #self.cap = cv2.VideoCapture(ip_address)
+        self.cap = cv2.VideoCapture('/dev/video4')
+
         print("Camera Hadler ready to start!")
         #self.start()
 

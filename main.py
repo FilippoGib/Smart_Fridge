@@ -5,7 +5,6 @@ def main():
     CH = CameraHandler()
     product_data = CH.start()
     if product_data:
-
         EDR = ExpirationDateReader(use_gpu=False)
         expiry_date = EDR.read_date_from_camera()
     if expiry_date and product_data:

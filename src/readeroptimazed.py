@@ -120,7 +120,8 @@ class ExpirationDateReader:
 
     def read_date_from_camera(self):
         """Apre la fotocamera, applica OCR, e cerca una data di scadenza."""
-        cap = cv2.VideoCapture(ip_address)
+        #cap = cv2.VideoCapture(ip_address)
+        cap = cv2.VideoCapture('/dev/video4')
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         print("Rilevamento automatico della data di scadenza. Premi 'q' per uscire.")

@@ -14,8 +14,8 @@ class CameraHandler():
     
     #constructor
     def __init__(self):
-        #self.cap = cv2.VideoCapture(ip_address)
-        self.cap = cv2.VideoCapture('/dev/video4')
+        self.cap = cv2.VideoCapture(ip_address)
+        #self.cap = cv2.VideoCapture('/dev/video4')
 
         print("Camera Hadler ready to start!")
         #self.start()
@@ -28,11 +28,15 @@ class CameraHandler():
 
         print("Camera acquired successfully")
 
-        product_data = self.detecting_product_data()
+        information = self.detecting_product_data()
+
+        product_data = information["product_data"]
+        barcode = information["barcode"]
         
-        if product_data:
+        if product_data and barcode:
             print("Product data: ", product_data.get('name'))
-            return product_data
+            print("Barcode: ", barcode)
+            return {"product_data": product_data, "barcode": barcode}
         else:
             print("Product data could not be retreived")
             return None
@@ -50,11 +54,11 @@ class CameraHandler():
             processed_frame = preprocess_image(frame)
 
             cv2.imshow('Processed Camera Feed', processed_frame)
-            product_data = decode_frame_barcode(processed_frame)
-            if product_data:
+            information = decode_frame_barcode(processed_frame)
+            if information:
                 self.cap.release()
                 cv2.destroyAllWindows()
-                return product_data
+                return information
 
             # Delay to reduce frequency of "not decoded" message
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -66,8 +70,6 @@ class CameraHandler():
         return None
     
 
-    def detecting_product_expiry_date(self):
-        return False
 
 
     

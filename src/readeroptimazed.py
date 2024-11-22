@@ -120,8 +120,8 @@ class ExpirationDateReader:
 
     def read_date_from_camera(self):
         """Apre la fotocamera, applica OCR, e cerca una data di scadenza."""
-        #cap = cv2.VideoCapture(ip_address)
-        cap = cv2.VideoCapture('/dev/video4')
+        cap = cv2.VideoCapture(ip_address)
+        #cap = cv2.VideoCapture('/dev/video4')
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         print("Rilevamento automatico della data di scadenza. Premi 'q' per uscire.")
@@ -165,108 +165,3 @@ class ExpirationDateReader:
         cap.release()
         cv2.destroyAllWindows()
 
-# Esempio d'uso
-# reader = ExpirationDateReader(use_gpu=False)
-# reader.read_date_from_camera()
-# Punto di ingresso principale
-
-# if __name__ == "__main__":
-#     # Creiamo un'istanza della classe ExpirationDateReader
-#     reader = ExpirationDateReader(use_gpu=False)
-#     reader.read_date_from_camera()
-
-
-"""import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-import cv2
-import easyocr
-import re
-from datetime import datetime
-# Evita conflitti con OpenMP
-
-
-# Inizializza il lettore OCR solo per inglese e italiano per ridurre il carico computazionale
-reader = easyocr.Reader(['en', 'it'], gpu=False)
-
-# Funzione per trovare la data in un testo usando espressioni regolari
-def find_expiration_date(text):
-    # Pattern comuni per date
-    date_patterns = [
-        r"\b\d{2}/\d{2}/\d{4}\b",  # DD/MM/AAAA
-        r"\b\d{2}-\d{2}-\d{4}\b",  # DD-MM-AAAA
-        r"\b\d{2}/\d{2}/\d{2}\b",  # DD/MM/AA
-        r"\b\d{2}-\d{2}-\d{2}\b",  # DD-MM-AA
-        r"\b\d{2}\.\d{4}\b"        # MM.AAAA
-    ]
-    
-    for pattern in date_patterns:
-        match = re.search(pattern, text)
-        if match:
-            detected_date = match.group()
-            # Se la data è nel formato DD/MM, aggiungi l'anno corrente
-            if re.match(r"\b\d{2}/\d{2}\b", detected_date):
-                current_year = datetime.now().year
-                detected_date += f"/{current_year}"
-            return detected_date
-            #return match.group()
-    return None
-
-# Apri la fotocamera
-cap = cv2.VideoCapture(0)
-
-# Riduci la risoluzione della fotocamera per velocizzare l'elaborazione
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-print("Rilevamento automatico della data di scadenza. Premi 'q' per uscire.")
-
-# Variabili per il controllo del numero di frame
-frame_skip = 10
-frame_count = 0
-
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("Errore nell'aprire la fotocamera.")
-        break
-
-    # Mostra il frame
-    cv2.imshow("Rilevamento data di scadenza", frame)
-
-    # Applica l'OCR solo ogni frame_skip-esimo frame
-    if frame_count % frame_skip == 0:
-        # Converti in scala di grigi e applica soglia binaria
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _, binary_frame = cv2.threshold(gray_frame, 120, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-        # Trova contorni per isolare aree con possibile testo
-        contours, _ = cv2.findContours(binary_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        for cnt in contours:
-            x, y, w, h = cv2.boundingRect(cnt)
-            # Considera solo i contorni che potrebbero contenere testo (larghezza/altezza sufficienti)
-            if w > 50 and h > 15:
-                roi = frame[y:y+h, x:x+w]
-                
-                # Applica OCR all'area selezionata (ROI)
-                results = reader.readtext(roi)
-                
-                # Combina il testo rilevato
-                detected_text = " ".join([res[1] for res in results])
-                print("Testo rilevato:", detected_text)
-
-                # Cerca una data di scadenza nel testo rilevato
-                expiration_date = find_expiration_date(detected_text)
-                if expiration_date:
-                    print("Data di scadenza rilevata:", expiration_date)
-                    break
-
-    # Incrementa il contatore dei frame
-    frame_count += 1
-
-    # Controlla se l'utente ha premuto 'q' per uscire
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
-
-# Rilascia la fotocamera e chiudi tutte le finestre
-cap.release()
-cv2.destroyAllWindows()"""

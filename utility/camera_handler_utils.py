@@ -4,6 +4,9 @@ from pyzbar.pyzbar import decode
 import requests
 import os
 
+ID = "1"
+URL = f"http://172.20.10.4:8000/api/fridges/{ID}/products"
+
 def preprocess_image(img):
         # Convert to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -60,4 +63,17 @@ def decode_frame_barcode(frame):
     barcode = decoded_product_data[0].data.decode("utf-8")
     print('Barcode found: ' + barcode)
     product = find_product(barcode)
-    return product
+    return {"product_data": product, "barcode": barcode}
+
+
+def send_product_to_server(barcode, date, name): #json format
+    data = {
+         "fridge_id": f"{ID}",
+         "barcode": f"{barcode}",
+         "expire_date": f"{date}",
+         "name": f"{name}"
+    }
+    response = requests.post(URL, data, verify=False)
+    print(response.status_code)
+    print(response.json())
+     

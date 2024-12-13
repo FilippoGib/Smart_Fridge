@@ -1,4 +1,4 @@
-from src.readeroptimazed import ExpirationDateReader
+from src.date_reader import ExpirationDateReader
 
 def main():
     EDR = ExpirationDateReader(use_gpu=False)

@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import os
 
-from utility.camera_utils import preprocess_image, decode_frame_barcode
+import utility.camera_utils as camer_utils
+from src.date_reader import ExpirationDateReader
 
 
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
@@ -27,14 +28,17 @@ class CameraHandler():
     def start(self):
         
         information = self.detecting_product_data()
-
         product_data = information["product_data"]
         barcode = information["barcode"]
         
-        if product_data and barcode:
+        EDR = ExpirationDateReader()
+        date = EDR.read_date_from_camera(self.cap)
+        
+        if product_data and barcode and date:
             print("Product data: ", product_data.get('name'))
             print("Barcode: ", barcode)
-            return {"product_data": product_data, "barcode": barcode}
+            print("Date: ", date)
+            return {"product_data": product_data, "barcode": barcode, "date": date}
         else:
             print("Product data could not be retreived")
             return None
@@ -49,10 +53,10 @@ class CameraHandler():
                 break
 
             # Apply preprocessing before decoding
-            processed_frame = preprocess_image(frame)
+            processed_frame = camer_utils.preprocess_image(frame)
 
             cv2.imshow('Processed Camera Feed', processed_frame)
-            information = decode_frame_barcode(processed_frame)
+            information = camer_utils.decode_frame_barcode(processed_frame)
             if information:
                 return information
 

@@ -1,10 +1,15 @@
 from src.camera_hanlder import CameraHandler
 from src.readeroptimazed import ExpirationDateReader
-from utility.camera_handler_utils import send_product_to_server
+from src.external_fridge_monitor import ExternalFridgeMonitor
+from utility.utils import send_product_to_server
 from datetime import datetime
+import threading
 
-def main():
+
+def insert_products():
     CH = CameraHandler()
+
+    #TODO: 
 
     information = CH.start()
 
@@ -25,8 +30,23 @@ def main():
 
             send_product_to_server(barcode, data_correct_format, product_data.get('name'))
 
-    # send_product_to_server("9090929920", "2024-11-23", "Macachi")
+def monitoring_fridge():
+    fm = ExternalFridgeMonitor()
+    fm.monitoring_loop()
+
+
+def main():
+    #concurrently start two threads to 
+    monitoring_thread = threading.Thread(target=monitoring_fridge)
+    inserting_thread = threading.Thread(target=insert_products)
     
+    monitoring_thread.start()
+
+    #TODO: when the switch is triggered the thread to insert products starts 
+    inserting_thread.start()
+
+    monitoring_thread.join()
+    inserting_thread.join()
 
 if __name__ == "__main__":
     main()

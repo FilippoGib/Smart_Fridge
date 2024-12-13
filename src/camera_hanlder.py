@@ -4,7 +4,7 @@ from pyzbar.pyzbar import decode
 import requests
 import os
 
-from utility.camera_handler_utils import preprocess_image, decode_frame_barcode
+from utility.utils import preprocess_image, decode_frame_barcode
 
 
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
@@ -14,20 +14,20 @@ class CameraHandler():
     
     #constructor
     def __init__(self):
-        self.cap = cv2.VideoCapture(ip_address)
-        #self.cap = cv2.VideoCapture('/dev/video4')
+        # self.cap = cv2.VideoCapture(ip_address)
+        self.cap = cv2.VideoCapture('/dev/video4')
 
-        print("Camera Hadler ready to start!")
-        #self.start()
-
-
-    def start(self):
         if not self.cap.isOpened():
             print("ERROR: Camera could not be accessed.")
             return None
 
         print("Camera acquired successfully")
 
+        print("Camera Hadler ready to start!")
+
+
+    def start(self):
+        
         information = self.detecting_product_data()
 
         product_data = information["product_data"]

@@ -1,10 +1,8 @@
 import cv2
 import numpy as np
-from pyzbar.pyzbar import decode
-import requests
 import os
 
-from utility.utils import preprocess_image, decode_frame_barcode
+from utility.camera_utils import preprocess_image, decode_frame_barcode
 
 
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
@@ -19,7 +17,7 @@ class CameraHandler():
 
         if not self.cap.isOpened():
             print("ERROR: Camera could not be accessed.")
-            return None
+            return -1
 
         print("Camera acquired successfully")
 
@@ -56,18 +54,19 @@ class CameraHandler():
             cv2.imshow('Processed Camera Feed', processed_frame)
             information = decode_frame_barcode(processed_frame)
             if information:
-                self.cap.release()
-                cv2.destroyAllWindows()
                 return information
 
-            # Delay to reduce frequency of "not decoded" message
+            # Manual exit
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 print("Exiting capture.")
                 break
 
+            
+    def graceful_exit(self):
         self.cap.release()
         cv2.destroyAllWindows()
-        return None
+        print("Camera released and windows closed.")
+        return 0
     
 
 

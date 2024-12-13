@@ -1,10 +1,15 @@
 import serial
 import serial.tools.list_ports
+import utility.monitor_utils as monitor_utils
+from src.camera_hanlder import CameraHandler
+
+IS_CAMERA_OPEN = False
 
 class ExternalFridgeMonitor():
 
 	def __init__(self):
-		self.portname = "COM3"  # Replace with your Arduino's port (e.g., COM3 or /dev/ttyUSB0)
+		self.portname = "/dev/ttyUSB0"  # Replace with your Arduino's port (e.g., COM3 or /dev/ttyUSB0)
+		#potrebbe essere che se hai arduino ide aperto non riesci a comunicare in seriale perchè la porta è occupata
 		self.baud_rate = 9600
 		self.ser = None
 		self.setupSerial()
@@ -20,7 +25,6 @@ class ExternalFridgeMonitor():
 			print("Cannot connect to " + self.portname)
 			exit(1)
 
-
 	def monitoring_loop(self):
 		#infinite loop for serial managing
 		#constantly monitor temperature and humidity of the fridge
@@ -31,14 +35,27 @@ class ExternalFridgeMonitor():
 				if self.ser.in_waiting > 0:
 					#data available from the serial port
 					data = self.ser.readline().decode('utf-8').strip()
+					CH = None
+					EDR = None
 					if data == 'HIGH':
-						#the movement sensor has been triggered so I have to turn the camera on
-						pass
+						#movement sensor has been triggered
+						# if IS_CAMERA_OPEN == False:
+						# 	#inizialize camera
+						# 	CH = CameraHandler()
+						#   EDR = ExpirationDateReader(use_gpu=False)
+						# 	IS_CAMERA_OPEN = True
+						# 	#aggiungere la logica che legge lo stato dello switch se è IN o OUT
+						# 	monitor_utils.insert_product(CH, EDR)
+						# else:
+						# 	#camera is already open
+						# 	pass
+						print('HIGH')
 					else:
-						#the sensor is not percieving movement
-						if ... : #the sensor hasn't percieved any movement in a while (tot time)
-							#turn camera off
-							pass
+						# #the sensor is not percieving movement
+						# if ... : #the sensor hasn't percieved any movement in a while (tot time)
+						# 	#turn camera off
+						# 	CH.graceful_exit()
+						print('LOW')
 						
 					
 

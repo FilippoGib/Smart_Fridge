@@ -4,18 +4,20 @@ from datetime import datetime
 from src.camera_hanlder import CameraHandler
 
 
-ID = "1"
-URL = f"http://172.20.10.4:8000/api/fridges/{ID}/products"
+ID = "2"
+URL = f"http://192.168.23.216:8080/api/fridges/{ID}/products"
 
 def send_product_to_server(barcode, date, name): #json format
     data = {
-         "fridge_id": f"{ID}",
+         "fridge": f"{ID}",
          "barcode": f"{barcode}",
          "expire_date": f"{date}",
          "name": f"{name}"
     }
     response = requests.post(URL, data, verify=False)
-    print(response.json())
+    response.raise_for_status()
+    print(response.status_code)
+    assert (response.status_code == 201), 'cannot connect to server'
     return response.status_code
 
 
@@ -23,6 +25,10 @@ def insert_product(CH: CameraHandler):
 
     information = CH.start() #returns a dictionary with the product data and the barcode
 
+    if not CH.cap.isOpened():
+        print("In insert_product: Camera could not be accessed.")
+        return -1
+    
     product_data = information["product_data"]
     barcode = information["barcode"]
     expiry_date = information["date"]
@@ -33,7 +39,7 @@ def insert_product(CH: CameraHandler):
             data_correct_format = data_tmp.strftime("%Y-%m-%d")
     
             print(f"The product is {product_data.get('name')}, the barcode is {barcode} and the expity date is {data_correct_format}")
-
+            print("Next step: sending data to the server")
             status_code = send_product_to_server(barcode, data_correct_format, product_data.get('name'))
             if(status_code == 201):
                 print("Product inserted successfully")
@@ -43,3 +49,6 @@ def insert_product(CH: CameraHandler):
                 print("Product could not be inserted")
                 print(f"status_code: {status_code}")
                 return -1
+    else:
+         print("CameraHandler.start() failed")
+         return -1

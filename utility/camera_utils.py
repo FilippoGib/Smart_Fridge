@@ -60,7 +60,10 @@ def decode_frame_barcode(frame):
     barcode = decoded_product_data[0].data.decode("utf-8")
     print('Barcode found: ' + barcode)
     product = find_product(barcode)
-    return {"product_data": product, "barcode": barcode}
+    if product is not None:
+        return {"product_data": product, "barcode": barcode}
+    else: return None
+    
 
 
 

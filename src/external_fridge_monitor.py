@@ -43,6 +43,7 @@ class ExternalFridgeMonitor():
 							#inizialize camera
 							CH = CameraHandler()
 							self.IS_CAMERA_OPEN = True
+							print('CAMERA IS ALREADY OPEN')
 							#aggiungere la logica che legge lo stato dello switch se è IN o OUT
 							inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop, args=(CH, ))
 							inserting_product_loop_thread.start()
@@ -63,7 +64,9 @@ class ExternalFridgeMonitor():
 			return_code = monitor_utils.insert_product(CH)
 			if return_code == 0: #success
 				print(return_code)
-						
+			else: 
+				print('something went wrong')
+				return return_code						
 					
 
 

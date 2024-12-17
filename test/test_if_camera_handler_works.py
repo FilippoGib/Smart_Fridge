@@ -4,7 +4,7 @@ def main():
     CH = CameraHandler()
     product_data = CH.start()
     if product_data:
-        print(f"The data i found is {product_data.get('name')}")
+        print(f"The data i found is {product_data['product_data']}")
 
 
 if __name__ == "__main__":

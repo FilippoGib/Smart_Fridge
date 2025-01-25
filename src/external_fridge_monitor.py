@@ -3,7 +3,9 @@ import serial.tools.list_ports
 import utility.monitor_utils as monitor_utils
 from src.camera_hanlder import CameraHandler
 import threading
+import time
 
+threshold = 20
 
 class ExternalFridgeMonitor():
 
@@ -13,7 +15,9 @@ class ExternalFridgeMonitor():
 		self.baud_rate = 9600
 		self.ser = None
 		self.IS_CAMERA_OPEN = False
+		self.COUNTER = 0
 		self.setupSerial()
+		self.CH = None
 
 
 	def setupSerial(self):
@@ -32,29 +36,31 @@ class ExternalFridgeMonitor():
 		while (True):
 			#look for a byte from serial
 			if not self.ser is None:
-
-				if self.ser.in_waiting > 0:
-					#data available from the serial port
+				if self.ser.in_waiting > 0: #data available from the serial port
 					data = self.ser.readline().decode('utf-8').strip()
-					CH = None
 					if data == 'HIGH':
+						self.COUNTER = 0
 						print('HIGH')
 						if self.IS_CAMERA_OPEN == False:
 							#inizialize camera
-							CH = CameraHandler()
+							self.CH = CameraHandler()
 							self.IS_CAMERA_OPEN = True
-							print('CAMERA IS ALREADY OPEN')
 							#aggiungere la logica che legge lo stato dello switch se è IN o OUT
-							inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop, args=(CH, ))
+							inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop, args=(self.CH, ))
 							inserting_product_loop_thread.start()
 						else:
 							#camera is already open
-							pass
-					else:
-						# #the sensor is not percieving movement
-						# if ... : #the sensor hasn't percieved any movement in a while (tot time)
-						# 	#turn camera off
-						# 	CH.graceful_exit()
+							print('CAMERA IS ALREADY OPEN')
+							
+					else: #I'm reading LOW
+						if self.IS_CAMERA_OPEN:
+							#LOGIC TO BE ADDED
+							self.COUNTER += 1
+							print(self.COUNTER)
+							if self.COUNTER >= threshold:
+								self.CH.graceful_exit()
+								self.COUNTER = 0
+								self.IS_CAMERA_OPEN = False
 						print('LOW')
 		
 
@@ -64,9 +70,13 @@ class ExternalFridgeMonitor():
 			return_code = monitor_utils.insert_product(CH)
 			if return_code == 0: #success
 				print(return_code)
-			else: 
-				print('something went wrong')
-				return return_code						
+				continue
+			elif return_code == -2: #graceful exit
+				print("Server error")
+				continue
+			elif return_code == -1: 
+				print('camera error')
+				CH.graceful_exit()						
 					
 
 

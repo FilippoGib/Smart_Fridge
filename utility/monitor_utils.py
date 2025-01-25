@@ -5,7 +5,7 @@ from src.camera_hanlder import CameraHandler
 
 
 ID = "2"
-URL = f"http://192.168.23.216:8080/api/fridges/{ID}/products"
+URL = f"http://127.0.0.1:8000/api/fridges/{ID}/products"
 
 def send_product_to_server(barcode, date, name): #json format
     data = {
@@ -15,15 +15,19 @@ def send_product_to_server(barcode, date, name): #json format
          "name": f"{name}"
     }
     response = requests.post(URL, data, verify=False)
-    response.raise_for_status()
+    # response.raise_for_status()
     print(response.status_code)
-    assert (response.status_code == 201), 'cannot connect to server'
+    # assert (response.status_code == 201), 'cannot connect to server'
     return response.status_code
 
 
 def insert_product(CH: CameraHandler):
 
     information = CH.start() #returns a dictionary with the product data and the barcode
+
+    if CH.is_graceful_exit:
+         print('Graceful exit')
+         return -2
 
     if not CH.cap.isOpened():
         print("In insert_product: Camera could not be accessed.")
@@ -41,6 +45,7 @@ def insert_product(CH: CameraHandler):
             print(f"The product is {product_data.get('name')}, the barcode is {barcode} and the expity date is {data_correct_format}")
             print("Next step: sending data to the server")
             status_code = send_product_to_server(barcode, data_correct_format, product_data.get('name'))
+            print("sende_product_to_server() has been called!!!!!!!!!!!!!!!!")
             if(status_code == 201):
                 print("Product inserted successfully")
                 print("You can insert the next product")
@@ -48,7 +53,7 @@ def insert_product(CH: CameraHandler):
             else:
                 print("Product could not be inserted")
                 print(f"status_code: {status_code}")
-                return -1
+                return -2
     else:
          print("CameraHandler.start() failed")
          return -1

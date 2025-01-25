@@ -32,7 +32,7 @@ if __name__ == '__main__':
     date = "2024-12-16"
     barcode = "123456789"
     ID = "2"
-    URL = f"http://192.168.23.216:8080/api/fridges/{ID}/products" #change the IP address to the server's IP address
+    URL = f"http://127.0.0.1:8000/api/fridges/{ID}/products" #change the IP address to the server's IP address
 
     test(name, date, barcode, ID, URL)
     print('All tests passed')

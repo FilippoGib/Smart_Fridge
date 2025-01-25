@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import os
+import signal
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
-import cv2
 import easyocr
 import re
 from datetime import datetime
@@ -14,12 +14,12 @@ os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
 # ip_address = "https://172.20.10.6:4343/video" #cambiare secondo necessità, devi essere sullo stesso wi-fi del telefono, no eduroam
 
 class CameraHandler():
-    
     #constructor
     def __init__(self, use_gpu = False):
         # self.cap = cv2.VideoCapture(ip_address)
         self.cap = cv2.VideoCapture('/dev/video0')
         self.reader = easyocr.Reader(['en', 'it'], gpu=use_gpu)  # lingua settata solo per numeri e simboli
+        self.is_graceful_exit = False
 
         if not self.cap.isOpened():
             print("ERROR: Camera could not be accessed.")
@@ -32,9 +32,11 @@ class CameraHandler():
 
     def start(self):
         
-        information = self.detecting_product_data()
+        information = None
         while information is None:
             information = self.detecting_product_data()
+            if information == 0:
+                return 0
         product_data = information["product_data"]
         barcode = information["barcode"]
         
@@ -52,16 +54,22 @@ class CameraHandler():
 
     def detecting_product_data(self):
         while True:
+
+            if self.is_graceful_exit:
+                os.kill(os.getpid(), signal.SIGKILL) 
+                return 0
+            
             ret, frame = self.cap.read()
 
             if not ret:
                 print("ERROR: Frame capture failed.")
-                break
+                return 0
 
             # Apply preprocessing before decoding
             processed_frame = camer_utils.preprocess_image(frame)
 
-            cv2.imshow('Processed Camera Feed', processed_frame)
+            cv2.imshow('Processed Camera Feed', processed_frame) #just for visualization
+            
             information = camer_utils.decode_frame_barcode(processed_frame)
             if information is not None:
                 return information
@@ -76,7 +84,10 @@ class CameraHandler():
         self.cap.release()
         cv2.destroyAllWindows()
         print("Camera released and windows closed.")
+        self.is_graceful_exit = True
+        os.kill(os.getpid(), signal.SIGKILL) 
         return 0
+    
     
     def last_day_of_month(self, month, year):
         """Restituisce l'ultimo giorno del mese per il mese e anno specificati."""

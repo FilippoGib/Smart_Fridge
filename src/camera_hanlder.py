@@ -32,6 +32,7 @@ class CameraHandler():
         print("Camera Hadler ready to start!")
         self.successfully_initialized = True
 
+
     def start(self):
         print("##################################### CH.start() called ############################################")
         information = None
@@ -55,19 +56,24 @@ class CameraHandler():
 
 
     def detecting_product_data(self):
+        start_time = time.time()
         while True:
             print("########################################## Detecting product data was called ############################################")
             ret, frame = self.cap.read()
 
+            elapsed_time = time.time() - start_time
+            if elapsed_time > 10:
+                print("WARNING: Product data detection timed out.")
+                return 0
+
             if not ret or not frame.any():
                 print("ERROR: Frame capture failed.")
-                return 0
+                exit(0)
 
             # Apply preprocessing before decoding
             processed_frame = camer_utils.preprocess_image(frame)
             information = camer_utils.decode_frame_barcode(processed_frame)
             if information is not None:
-                
                 return information
 
     

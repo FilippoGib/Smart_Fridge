@@ -29,6 +29,9 @@ def insert_product(CH: CameraHandler):
         print("In insert_product: Camera could not be accessed.")
         return -1
     
+    if information == 0:
+        return 0
+    
     product_data = information["product_data"]
     barcode = information["barcode"]
     expiry_date = information["date"]

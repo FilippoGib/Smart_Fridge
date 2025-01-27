@@ -8,6 +8,7 @@ import easyocr
 import re
 from datetime import datetime
 import utility.camera_utils as camer_utils
+import time
 
 
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
@@ -16,22 +17,23 @@ os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
 class CameraHandler():
     #constructor
     def __init__(self, use_gpu = False):
+        cv2.destroyAllWindows()
+        time.sleep(1)
         # self.cap = cv2.VideoCapture(ip_address)
+        self.successfully_initialized = False
         self.cap = cv2.VideoCapture('/dev/video0')
         self.reader = easyocr.Reader(['en', 'it'], gpu=use_gpu)  # lingua settata solo per numeri e simboli
-        self.is_graceful_exit = False
 
         if not self.cap.isOpened():
             print("ERROR: Camera could not be accessed.")
-            return -1
+            # return -1
 
         print("Camera acquired successfully")
-
         print("Camera Hadler ready to start!")
-
+        self.successfully_initialized = True
 
     def start(self):
-        
+        print("##################################### CH.start() called ############################################")
         information = None
         while information is None:
             information = self.detecting_product_data()
@@ -54,40 +56,20 @@ class CameraHandler():
 
     def detecting_product_data(self):
         while True:
-
-            if self.is_graceful_exit:
-                os.kill(os.getpid(), signal.SIGKILL) 
-                return 0
-            
+            print("########################################## Detecting product data was called ############################################")
             ret, frame = self.cap.read()
 
-            if not ret:
+            if not ret or not frame.any():
                 print("ERROR: Frame capture failed.")
                 return 0
 
             # Apply preprocessing before decoding
             processed_frame = camer_utils.preprocess_image(frame)
-
-            cv2.imshow('Processed Camera Feed', processed_frame) #just for visualization
-            
             information = camer_utils.decode_frame_barcode(processed_frame)
             if information is not None:
+                
                 return information
 
-            # Manual exit
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                print("Exiting capture.")
-                break
-
-            
-    def graceful_exit(self):
-        self.cap.release()
-        cv2.destroyAllWindows()
-        print("Camera released and windows closed.")
-        self.is_graceful_exit = True
-        os.kill(os.getpid(), signal.SIGKILL) 
-        return 0
-    
     
     def last_day_of_month(self, month, year):
         """Restituisce l'ultimo giorno del mese per il mese e anno specificati."""
@@ -213,7 +195,7 @@ class CameraHandler():
                 print("Errore nell'aprire la fotocamera.")
                 break
 
-            cv2.imshow("Processed Camera Feed", frame)
+            #cv2.imshow("Processed Camera Feed", frame)
 
             if frame_count % frame_skip == 0:
                 gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -234,11 +216,18 @@ class CameraHandler():
                             return expiration_date
 
             frame_count += 1
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+            # if cv2.waitKey(1) & 0xFF == ord("q"):
+            #     break
 
 
-
+    def __del__(self):
+        """Destructor to ensure the camera is released and resources are cleaned up."""
+        if self.cap.isOpened():
+            self.cap.release()
+            print("Destructor: Camera released.")
+        cv2.destroyAllWindows()
+        time.sleep(1)
+        print("Destructor: All OpenCV windows closed.")
 
     
 

@@ -8,20 +8,9 @@ def monitoring_fridge_extern():
     fm.monitoring_loop()
 
 
-def monitoring_fridge_intern():
-    fm = InternalFridgeMonitor()
-    fm.monitoring_loop()
-
-
 def main():
-    #concurrently start two threads to 
-    external_thread = threading.Thread(target=monitoring_fridge_extern)
-    #internal_thread = threading.Thread(target=monitoring_fridge_intern)
-    
-    external_thread.start()
-    #internal_thread.start()
+    monitoring_fridge_extern()   
 
-    external_thread.join()
 
 if __name__ == "__main__":
     main()

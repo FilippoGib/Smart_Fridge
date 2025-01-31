@@ -4,6 +4,7 @@ import utility.monitor_utils as monitor_utils
 from src.camera_hanlder import CameraHandler
 import threading
 import time
+import json
 import cv2
 
 threshold = 20
@@ -26,9 +27,10 @@ class ExternalFridgeMonitor():
 		try:
 			print ("connecting to " + self.portname)
 			self.ser = serial.Serial(self.portname, baudrate=self.baud_rate, timeout=0)
-		except:
+		except serial.SerialException as e:
 			self.ser = None
 			print("Cannot connect to " + self.portname)
+			print(f"Error: {e}")
 			exit(1)
 
 
@@ -87,10 +89,52 @@ class ExternalFridgeMonitor():
 				print('camera error')
 				break			
 		print("Thread stopped")
-					
 
 
-	
+	def read_GPS(self):
+
+		buffer = ""  # Buffer to store incoming data
+		counter = 0
+
+		while True:
+			if self.ser.is_open:  # Check if the port is open
+				
+				raw_data = self.ser.read(self.ser.in_waiting or 1).decode('utf-8', errors='ignore')  # Read available bytes
+
+				if not raw_data:
+				    continue
+
+				buffer += raw_data  # Append data to the buffer
+
+				# Check if a full JSON object is present
+				if "{" in buffer and "}" in buffer:
+					start = buffer.find("{")  # Find first `{`
+					end = buffer.rfind("}")  # Find last `}`
+					json_data = buffer[start:end+1]  # Extract the JSON string
+
+					try:
+						parsed_data = json.loads(json_data)  # Parse JSON
+						required_keys = {"latitude", "longitude", "satellites", "altitude"}
+
+						if required_keys.issubset(parsed_data.keys()):
+							counter += 1
+							if counter >= 5:
+								print("STOP")
+								self.ser.write(b"STOP\n")
+								return parsed_data
+
+						buffer = ""  # Clear buffer after successful parsing
+					except json.JSONDecodeError as e:
+						print(f"Error parsing JSON: {e}")  # Handle incomplete JSON
+
+			else:
+				print("Serial port is not open")
+				exit(1)
+
+
+
+
+
 
 
 

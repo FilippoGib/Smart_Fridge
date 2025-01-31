@@ -8,6 +8,7 @@ import json
 import cv2
 
 threshold = 20
+modality = None
 
 class ExternalFridgeMonitor():
 
@@ -41,16 +42,19 @@ class ExternalFridgeMonitor():
 			#look for a byte from serial
 			if not self.ser is None:
 				if self.ser.in_waiting > 0: #data available from the serial port
-					data = self.ser.readline().decode('utf-8').strip()
-					if data == 'HIGH':
+					#the message is ithe "HIGH, INSERTING" or "HIGH, EXTRACTION" or "LOW"
+					input_message = self.ser.readline().decode('utf-8').strip().split(",") # data is ither LOW or HIGH
+					data = input_message[0]
+					if data == 'HIGH': # I know that I also received the message "INSERTING" or "EXTRACTION"
+						modality = input_message[1]
 						self.COUNTER = 0
-						print('HIGH')
+						print('HIGH, ' + modality)
 						if self.IS_CAMERA_OPEN == False:
 							self.stop_inserting_thread.clear()  # Unset the stop signal
 							#inizialize camera
 							self.IS_CAMERA_OPEN = True
 							#aggiungere la logica che legge lo stato dello switch se è IN o OUT
-							self.inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop)
+							self.inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop, args=(modality,))
 							self.inserting_product_loop_thread.start()
 						else:
 							#camera is already open
@@ -73,12 +77,12 @@ class ExternalFridgeMonitor():
 						print('LOW')
 		
 
-	def inserting_product_loop(self):
+	def inserting_product_loop(self, _modality):
 		CH = CameraHandler()
 		assert isinstance(CH, CameraHandler)
 		#i want to create the camera handler object only once outside the inserting loop
 		while not self.stop_inserting_thread.is_set() and CH.successfully_initialized:
-			return_code = monitor_utils.insert_product(CH)
+			return_code = monitor_utils.insert_product(CH, _modality)
 			if return_code == 0: #success
 				print(return_code)
 				continue

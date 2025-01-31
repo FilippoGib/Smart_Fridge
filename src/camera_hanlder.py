@@ -21,7 +21,7 @@ class CameraHandler():
         time.sleep(1)
         # self.cap = cv2.VideoCapture(ip_address)
         self.successfully_initialized = False
-        self.cap = cv2.VideoCapture('/dev/video4') #check the correct video device with ls /dev/video* and "cheese /dev/video<X>"
+        self.cap = cv2.VideoCapture('/dev/video0') #check the correct video device with ls /dev/video* and "cheese /dev/video<X>"
         self.reader = easyocr.Reader(['en', 'it'], gpu=use_gpu)  # lingua settata solo per numeri e simboli
 
         if not self.cap.isOpened():

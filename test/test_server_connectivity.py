@@ -5,12 +5,12 @@ def test_insertion(name, date, barcode, ID, URL):
     response = send_product_to_server(barcode=barcode, date=date, name=name, ID=ID, URL=URL)
     assert response == 201, "Product could not be inserted"
 
-    # response = remove_product_from_server(barcode=barcode, date=date, name=name, ID=ID, URL=URL)
-    # assert response == 200, "Product could not be removed"
+    response = remove_product_from_server(barcode=barcode, date=date, name=name, ID=ID, URL=URL)
+    assert response == 200, "Product could not be removed"
 
 
 def main():
-    name = "mannaggia la madonna porcodio"
+    name = "PROVAPROVAPROVAPROVA"
     date = "2024-12-16"
     barcode = "123456789"
     ID = 1

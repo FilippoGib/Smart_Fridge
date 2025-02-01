@@ -55,13 +55,15 @@ This accounts for **one-third** of all food produced for human consumption, whil
 
 ## 💻 About the Code
 
-1️⃣ The **bridge** starts serial communication with the **Arduino**.
-2️⃣ At startup, the Arduino sends **GPS data** to the server for location tracking.
-3️⃣ The Arduino then detects **motion in front of the fridge** and activates the **camera**.
+1️⃣ The **bridge** starts serial communication with the **Arduino**.  
+2️⃣ At startup, the Arduino sends **GPS data** to the server for location tracking.  
+3️⃣ The Arduino then detects **motion in front of the fridge** and activates the **camera**.  
 4️⃣ The camera scans:
-   - **Barcode** 📦
-   - **Expiry date** ⏳
-5️⃣ The system determines if the user is **inserting** or **extracting** an item and sends the appropriate **API request** (`POST` or `DELETE`).
+   - **Barcode** ▏▍▏▏▍▏▏▏▍▏
+
+   - **Expiry date** ⏳  
+
+5️⃣ The system determines if the user is **inserting** or **extracting** an item and sends the appropriate **API request** (`POST` or `DELETE`).  
 6️⃣ Once done, the system automatically **turns off the camera** after a set duration.
 
 ---
@@ -81,4 +83,10 @@ We welcome contributions! Feel free to:
 
 🔗 **Follow us for updates!** 🌍✨
 
-📧 Contact: [your.email@example.com](mailto:your.email@example.com)
+📧 Contact: [filippogib@gmail.com](mailto:your.email@example.com)  
+📧 Contact: [terry.campo.2002@gmail.com](mailto:your.email@example.com)  
+📧 Contact: [gio.forti.2002@gmail.com](mailto:your.email@example.com)  
+📧 Contact: [mattia.isidoro@gmail.com](mailto:your.email@example.com)
+
+
+

@@ -86,7 +86,7 @@ We welcome contributions! Feel free to:
 📧 Contact: [filippogib@gmail.com](mailto:your.email@example.com)  
 📧 Contact: [terry.campo.2002@gmail.com](mailto:your.email@example.com)  
 📧 Contact: [gio.forti.2002@gmail.com](mailto:your.email@example.com)  
-📧 Contact: [mattia.isidoro@gmail.com](mailto:your.email@example.com)
+📧 Contact: [isidoromattia@gmail.com](mailto:your.email@example.com)
 
 
 

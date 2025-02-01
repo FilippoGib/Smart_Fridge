@@ -33,8 +33,12 @@ class CameraHandler():
         self.successfully_initialized = True
 
 
-    def start(self):
+    def start(self, ser):
         print("##################################### CH.start() called ############################################")
+        if self.successfully_initialized == True:
+            #########
+            ser.write(b"CAMERA OK\n")
+            #########
         information = None
         while information is None:
             information = self.detecting_product_data()
@@ -42,10 +46,15 @@ class CameraHandler():
                 return 0
         product_data = information["product_data"]
         barcode = information["barcode"]
-        
+        #########
+        ser.write(b"BARCODE OK\n")
+        #########
         date = self.read_date_from_camera()
         
         if product_data and barcode and date:
+            #########
+            ser.write(b"DATE OK\n")
+            #########
             print("Product data: ", product_data.get('name'))
             print("Barcode: ", barcode)
             print("Date: ", date)

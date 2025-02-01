@@ -43,9 +43,9 @@ def remove_product_from_server(barcode, date, name, ID, URL):
     return response.status_code
 
 
-def insert_product(CH: CameraHandler, modality):
+def insert_product(CH: CameraHandler, modality, ser):
 
-    information = CH.start() #returns a dictionary with the product data and the barcode
+    information = CH.start(ser=ser) #returns a dictionary with the product data and the barcode
 
     if not CH.cap.isOpened():
         print("In insert_product: Camera could not be accessed.")

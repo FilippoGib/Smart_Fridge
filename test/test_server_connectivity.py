@@ -1,12 +1,19 @@
 from utility.monitor_utils import send_product_to_server, remove_product_from_server
+from utility.gps_utils import send_GPS_data_to_server
 
 
 def test_insertion(name, date, barcode, ID, URL):
     response = send_product_to_server(barcode=barcode, date=date, name=name, ID=ID, URL=URL)
-    assert response == 201, "Product could not be inserted"
+    assert response == 201, "TEST: Product could not be inserted"
 
     response = remove_product_from_server(barcode=barcode, date=date, name=name, ID=ID, URL=URL)
-    assert response == 200, "Product could not be removed"
+    assert response == 200, "TEST: Product could not be removed"
+
+    response = send_GPS_data_to_server({'latitude': 200.000000, 'longitude': 200.000000, 'satellites': 200, 'altitude': 200})
+
+    if response not in (200, 201):
+        raise AssertionError("TEST: GPS data could not be sent")
+
 
 
 def main():

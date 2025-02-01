@@ -124,7 +124,7 @@ class ExternalFridgeMonitor():
 						if required_keys.issubset(parsed_data.keys()):
 							counter += 1
 							if counter >= 5:
-								print("STOP")
+								print("STOPPED")
 								self.ser.write(b"STOP\n")
 								return parsed_data
 

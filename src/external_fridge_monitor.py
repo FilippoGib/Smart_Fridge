@@ -59,7 +59,7 @@ class ExternalFridgeMonitor():
 						else:
 							#camera is already open
 							print('CAMERA IS ALREADY OPEN')
-							
+
 					else: #I'm reading LOW
 						if self.IS_CAMERA_OPEN:
 							#LOGIC TO BE ADDED
@@ -82,17 +82,24 @@ class ExternalFridgeMonitor():
 		assert isinstance(CH, CameraHandler)
 		#i want to create the camera handler object only once outside the inserting loop
 		while not self.stop_inserting_thread.is_set() and CH.successfully_initialized:
-			return_code = monitor_utils.insert_product(CH, _modality, ser = self.ser)
+			return_code = monitor_utils.insert_product(CH, _modality, ser = self.ser) # return = 0 success, return = -3 timeout, return = -2 server error, return = -1 camera error
 			if return_code == 0: #success
 				print(return_code)
-				self.ser.write(b"PRODUCT OK\n")
+				self.ser.write(b"s")
 				continue
 			elif return_code == -2:
 				print("Server error")
+				self.ser.write(b"e")
 				continue
 			elif return_code == -1: 
 				print('camera error')
+				self.ser.write(b"e")
 				break			
+			elif return_code == -3:
+				print('Timeout triggered')
+				# break
+		for i in range(50):
+			self.ser.write(b"o")
 		print("Thread stopped")
 
 

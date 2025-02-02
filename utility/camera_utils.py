@@ -54,7 +54,7 @@ def find_product(barcode):
 def decode_frame_barcode(frame):
     decoded_product_data = decode(frame)
     if not decoded_product_data:
-        print("No data in this frame")
+        # print("No data in this frame")
         return None
 
     barcode = decoded_product_data[0].data.decode("utf-8")

@@ -37,23 +37,25 @@ class CameraHandler():
         print("##################################### CH.start() called ############################################")
         if self.successfully_initialized == True:
             #########
-            ser.write(b"CAMERA OK\n")
+            ser.write(b"c")
             #########
         information = None
         while information is None:
             information = self.detecting_product_data()
-            if information == 0:
-                return 0
+            if information == -3:
+                return -3
         product_data = information["product_data"]
         barcode = information["barcode"]
         #########
-        ser.write(b"BARCODE OK\n")
+        ser.write(b"b")
         #########
         date = self.read_date_from_camera()
+        if date == -3:
+            return -3
         
         if product_data and barcode and date:
             #########
-            ser.write(b"DATE OK\n")
+            ser.write(b"d")
             #########
             print("Product data: ", product_data.get('name'))
             print("Barcode: ", barcode)
@@ -67,13 +69,14 @@ class CameraHandler():
     def detecting_product_data(self):
         start_time = time.time()
         while True:
-            print("########################################## Detecting product data was called ############################################")
+            # print("########################################## Detecting product data was called ############################################")
             ret, frame = self.cap.read()
 
             elapsed_time = time.time() - start_time
+
             if elapsed_time > 10:
                 print("WARNING: Product data detection timed out.")
-                return 0
+                return -3
 
             if not ret or not frame.any():
                 print("ERROR: Frame capture failed.")
@@ -202,7 +205,13 @@ class CameraHandler():
         frame_count = 0
         expiration_date_found = False
 
+        start_time = time.time()
+
         while not expiration_date_found:
+            elapsed_time = time.time() - start_time
+            if elapsed_time > 10:
+                print("WARNING: Date detection timed out.")
+                return -3
             ret, frame = self.cap.read()
             crop_height = 50 #pixels
             frame = frame[crop_height:, :]

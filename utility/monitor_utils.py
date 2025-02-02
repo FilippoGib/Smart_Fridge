@@ -45,14 +45,14 @@ def remove_product_from_server(barcode, date, name, ID, URL):
 
 def insert_product(CH: CameraHandler, modality, ser):
 
-    information = CH.start(ser=ser) #returns a dictionary with the product data and the barcode
-
     if not CH.cap.isOpened():
         print("In insert_product: Camera could not be accessed.")
         return -1
     
-    if information == 0:
-        return 0
+    information = CH.start(ser=ser) #returns a dictionary with the product data and the barcode
+
+    if information == -3:
+        return -3
     
     product_data = information["product_data"]
     barcode = information["barcode"]
@@ -62,7 +62,6 @@ def insert_product(CH: CameraHandler, modality, ser):
             data_og = expiry_date
             data_tmp = datetime.strptime(data_og, "%d/%m/%Y")
             data_correct_format = data_tmp.strftime("%Y-%m-%d")
-    
             print(f"The product is {product_data.get('name')}, the barcode is {barcode} and the expity date is {data_correct_format}")
             print("Next step: comunicate with the server")
             print(modality)
@@ -73,23 +72,27 @@ def insert_product(CH: CameraHandler, modality, ser):
                 if(status_code == 201):
                     print("Product inserted successfully")
                     print("You can insert the next product")
+                    # ser.write(b"s")
+                    # print(ser)
                     return 0
                 else:
                     print("Product could not be inserted")
                     print(f"status_code: {status_code}")
+                    # ser.write(b"e")
+                    # print(ser)
                     return -2
-                
             elif modality == " EXTRACTION":
                 print("###################### MODALITY = EXTRACTION ######################")
                 status_code = remove_product_from_server(barcode, data_correct_format, product_data.get('name'), ID=ID, URL=URL)
                 if status_code == 200:
                     print("Product removed successfully")
                     print("You can remove the next product")
+                    # ser.write(b"s")
                     return 0
                 else:
                     print("Product could not be removed")
+                    # ser.write(b"e")
                     return -2
-    
     else:
          print("Could not retrieve information")
-         return -1
+         return -2

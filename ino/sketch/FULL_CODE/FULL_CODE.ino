@@ -29,7 +29,7 @@ void setup()
 {
   pinMode(2, INPUT);         // To read movement sensor data
   ///////
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(switchPin, INPUT);
   ///////
   pinMode(CODE_LED, OUTPUT);
   pinMode(CAMERA_LED, OUTPUT);
@@ -77,12 +77,12 @@ void loop()
         message = "HIGH, EXTRACTION\n";
       }
       Serial.print(message);
-      // delay(500);
+      delay(500);
     }
     else
     {
       Serial.print("LOW\n");
-      // delay(500);
+      delay(500);
     }
 
     ////////////////////////////////////////////////////

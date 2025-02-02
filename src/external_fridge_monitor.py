@@ -7,8 +7,7 @@ import time
 import json
 import cv2
 
-threshold = 20
-modality = None
+threshold = 40
 
 class ExternalFridgeMonitor():
 
@@ -21,6 +20,7 @@ class ExternalFridgeMonitor():
 		self.COUNTER = 0
 		self.stop_inserting_thread = threading.Event()  # Event to signal thread termination
 		self.inserting_product_loop_thread = None
+		self.modality = None
 		self.setupSerial()
 
 
@@ -46,15 +46,16 @@ class ExternalFridgeMonitor():
 					input_message = self.ser.readline().decode('utf-8').strip().split(",") # data is ither LOW or HIGH
 					data = input_message[0]
 					if data == 'HIGH': # I know that I also received the message "INSERTING" or "EXTRACTION"
-						modality = input_message[1]
+						
+						self.modality = input_message[1]
 						self.COUNTER = 0
-						print('HIGH, ' + modality)
+						print('HIGH, ' + self.modality)
 						if self.IS_CAMERA_OPEN == False:
 							self.stop_inserting_thread.clear()  # Unset the stop signal
 							#inizialize camera
 							self.IS_CAMERA_OPEN = True
 							#aggiungere la logica che legge lo stato dello switch se è IN o OUT
-							self.inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop, args=(modality,))
+							self.inserting_product_loop_thread = threading.Thread(target=self.inserting_product_loop)
 							self.inserting_product_loop_thread.start()
 						else:
 							#camera is already open
@@ -77,12 +78,12 @@ class ExternalFridgeMonitor():
 						print('LOW')
 		
 
-	def inserting_product_loop(self, _modality):
-		CH = CameraHandler()
+	def inserting_product_loop(self):
+		CH = CameraHandler(self.stop_inserting_thread)
 		assert isinstance(CH, CameraHandler)
 		#i want to create the camera handler object only once outside the inserting loop
 		while not self.stop_inserting_thread.is_set() and CH.successfully_initialized:
-			return_code = monitor_utils.insert_product(CH, _modality, ser = self.ser) # return = 0 success, return = -3 timeout, return = -2 server error, return = -1 camera error
+			return_code = monitor_utils.insert_product(CH, modality=self.modality, ser = self.ser) # return = 0 success, return = -3 timeout, return = -2 server error, return = -1 camera error
 			if return_code == 0: #success
 				print(return_code)
 				self.ser.write(b"s")

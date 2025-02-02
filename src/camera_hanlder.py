@@ -16,14 +16,14 @@ os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
 
 class CameraHandler():
     #constructor
-    def __init__(self, use_gpu = False):
+    def __init__(self, threadFlag, use_gpu = False):
         cv2.destroyAllWindows()
         time.sleep(1)
         # self.cap = cv2.VideoCapture(ip_address)
         self.successfully_initialized = False
         self.cap = cv2.VideoCapture('/dev/video0') #check the correct video device with ls /dev/video* and "cheese /dev/video<X>"
         self.reader = easyocr.Reader(['en', 'it'], gpu=use_gpu)  # lingua settata solo per numeri e simboli
-
+        self.threadFlag = threadFlag
         if not self.cap.isOpened():
             print("ERROR: Camera could not be accessed.")
             # return -1
@@ -67,16 +67,16 @@ class CameraHandler():
 
 
     def detecting_product_data(self):
-        start_time = time.time()
-        while True:
+        # start_time = time.time()
+        while not self.threadFlag.is_set():
             # print("########################################## Detecting product data was called ############################################")
             ret, frame = self.cap.read()
 
-            elapsed_time = time.time() - start_time
+            # elapsed_time = time.time() - start_time
 
-            if elapsed_time > 10:
-                print("WARNING: Product data detection timed out.")
-                return -3
+            # if elapsed_time > 10:
+            #     print("WARNING: Product data detection timed out.")
+            #     return -3
 
             if not ret or not frame.any():
                 print("ERROR: Frame capture failed.")
@@ -87,6 +87,8 @@ class CameraHandler():
             information = camer_utils.decode_frame_barcode(processed_frame)
             if information is not None:
                 return information
+            
+        return -3
 
     
     def last_day_of_month(self, month, year):
@@ -205,13 +207,13 @@ class CameraHandler():
         frame_count = 0
         expiration_date_found = False
 
-        start_time = time.time()
+        # start_time = time.time()
 
-        while not expiration_date_found:
-            elapsed_time = time.time() - start_time
-            if elapsed_time > 10:
-                print("WARNING: Date detection timed out.")
-                return -3
+        while not expiration_date_found and not self.threadFlag.is_set():
+            # elapsed_time = time.time() - start_time
+            # if elapsed_time > 10:
+            #     print("WARNING: Date detection timed out.")
+            #     return -3
             ret, frame = self.cap.read()
             crop_height = 50 #pixels
             frame = frame[crop_height:, :]
@@ -242,6 +244,7 @@ class CameraHandler():
             frame_count += 1
             # if cv2.waitKey(1) & 0xFF == ord("q"):
             #     break
+        return -3
 
 
     def __del__(self):

@@ -137,7 +137,7 @@ void loop()
         cheekyTimer = millis();
         cheeky = true;
       }
-      if (millis() - cheekyTimer > 2000) 
+      if (millis() - cheekyTimer > 1000) 
       {
         changeState(SERVER_STATE);
         digitalWrite(SERVER_LED, HIGH);

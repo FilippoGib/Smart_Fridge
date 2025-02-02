@@ -46,8 +46,13 @@ class ExternalFridgeMonitor():
 					input_message = self.ser.readline().decode('utf-8').strip().split(",") # data is ither LOW or HIGH
 					data = input_message[0]
 					if data == 'HIGH': # I know that I also received the message "INSERTING" or "EXTRACTION"
-						
-						self.modality = input_message[1]
+						if self.modality != input_message[1]: #I'm reading a different modality
+							#kill the thread that is inserting the product
+							if self.IS_CAMERA_OPEN:
+								self.IS_CAMERA_OPEN = False
+								self.stop_inserting_thread.set()
+							self.modality = input_message[1]
+							time.sleep(2)
 						self.COUNTER = 0
 						print('HIGH, ' + self.modality)
 						if self.IS_CAMERA_OPEN == False:
@@ -97,7 +102,7 @@ class ExternalFridgeMonitor():
 				self.ser.write(b"e")
 				break			
 			elif return_code == -3:
-				print('Timeout triggered')
+				print('Sensor movement timeout or switched modality')
 				# break
 		for i in range(50):
 			self.ser.write(b"o")

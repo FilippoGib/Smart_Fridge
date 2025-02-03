@@ -1,7 +1,7 @@
 import requests
 
 ID = 1
-URL = f"http://127.0.0.1:8000/api/fridges/"
+URL = f"http://192.168.43.5:8080/api/fridges/"
 
 def send_GPS_data_to_server(GPS_data):
     # if the fridge with ID = 1 does not exist, the server will create it

@@ -5,7 +5,7 @@ from src.camera_hanlder import CameraHandler
 
 
 ID = 1
-URL = f"http://127.0.0.1:8000/api/fridges/{ID}/products"
+URL = f"http://192.168.43.5:8080/api/fridges/{ID}/products"
 
 
 def send_product_to_server(barcode, date, name, ID, URL): #json format
@@ -49,50 +49,6 @@ def insert_product(CH: CameraHandler, modality, ser):
         print("In insert_product: Camera could not be accessed.")
         return -1
     
-    information = CH.start(ser=ser) #returns a dictionary with the product data and the barcode
+    return_code = CH.start(ser=ser, modality=modality) #returns a dictionary with the product data and the barcode
 
-    if information == -3:
-        return -3
-    
-    product_data = information["product_data"]
-    barcode = information["barcode"]
-    expiry_date = information["date"]
-
-    if product_data and barcode and expiry_date:
-            data_og = expiry_date
-            data_tmp = datetime.strptime(data_og, "%d/%m/%Y")
-            data_correct_format = data_tmp.strftime("%Y-%m-%d")
-            print(f"The product is {product_data.get('name')}, the barcode is {barcode} and the expity date is {data_correct_format}")
-            print("Next step: comunicate with the server")
-            print(modality)
-            if modality == " INSERTION":
-                print("###################### MODALITY = INSERTION ######################")
-                status_code = send_product_to_server(barcode, data_correct_format, product_data.get('name'), ID=ID, URL=URL)
-                print("send_product_to_server() has been called!!!!!!!!!!!!!!!!")
-                if(status_code == 201):
-                    print("Product inserted successfully")
-                    print("You can insert the next product")
-                    # ser.write(b"s")
-                    # print(ser)
-                    return 0
-                else:
-                    print("Product could not be inserted")
-                    print(f"status_code: {status_code}")
-                    # ser.write(b"e")
-                    # print(ser)
-                    return -2
-            elif modality == " EXTRACTION":
-                print("###################### MODALITY = EXTRACTION ######################")
-                status_code = remove_product_from_server(barcode, data_correct_format, product_data.get('name'), ID=ID, URL=URL)
-                if status_code == 200:
-                    print("Product removed successfully")
-                    print("You can remove the next product")
-                    # ser.write(b"s")
-                    return 0
-                else:
-                    print("Product could not be removed")
-                    # ser.write(b"e")
-                    return -2
-    else:
-         print("Could not retrieve information")
-         return -2
+    return return_code

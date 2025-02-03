@@ -9,6 +9,11 @@ import re
 from datetime import datetime
 import utility.camera_utils as camer_utils
 import time
+import requests
+from datetime import datetime
+
+ID = 1
+URL = f"http://192.168.43.5:8080/api/fridges/{ID}/products"
 
 
 os.environ["QT_QPA_PLATFORM"] = "xcb" #non so se serve
@@ -21,7 +26,7 @@ class CameraHandler():
         time.sleep(1)
         # self.cap = cv2.VideoCapture(ip_address)
         self.successfully_initialized = False
-        self.cap = cv2.VideoCapture('/dev/video0') #check the correct video device with ls /dev/video* and "cheese /dev/video<X>"
+        self.cap = cv2.VideoCapture('/dev/video4') #check the correct video device with ls /dev/video* and "cheese /dev/video<X>"
         self.reader = easyocr.Reader(['en', 'it'], gpu=use_gpu)  # lingua settata solo per numeri e simboli
         self.threadFlag = threadFlag
         if not self.cap.isOpened():
@@ -33,7 +38,7 @@ class CameraHandler():
         self.successfully_initialized = True
 
 
-    def start(self, ser):
+    def start(self, ser, modality):
         print("##################################### CH.start() called ############################################")
         if self.successfully_initialized == True:
             #########
@@ -54,16 +59,55 @@ class CameraHandler():
             return -3
         
         if product_data and barcode and date:
+            status_code = None
             #########
             ser.write(b"d")
             #########
             print("Product data: ", product_data.get('name'))
             print("Barcode: ", barcode)
             print("Date: ", date)
-            return {"product_data": product_data, "barcode": barcode, "date": date}
+            
+            data_og = date
+            data_tmp = datetime.strptime(data_og, "%d/%m/%Y")
+            data_correct_format = data_tmp.strftime("%Y-%m-%d")
+            print(f"The product is {product_data.get('name')}, the barcode is {barcode} and the expity date is {data_correct_format}")
+            print("Next step: comunicate with the server")
+            print(modality)
+            if modality == " INSERTION":
+                print("###################### MODALITY = INSERTION ######################")
+                status_code = send_product_to_server(barcode, data_correct_format, product_data.get('name'), ID=ID, URL=URL)
+                time.sleep(2)
+                print("send_product_to_server() has been called!!!!!!!!!!!!!!!!")
+                if(status_code == 201):
+                    print("Product inserted successfully")
+                    print("You can insert the next product")
+                    
+                else:
+                    print("Product could not be inserted")
+                    print(f"status_code: {status_code}")
+                    
+            elif modality == " EXTRACTION":
+                print("###################### MODALITY = EXTRACTION ######################")
+                status_code = remove_product_from_server(barcode, data_correct_format, product_data.get('name'), ID=ID, URL=URL)
+                time.sleep(2)
+                if status_code == 200:
+                    print("Product removed successfully")
+                    print("You can remove the next product")
+                else:
+                    print("Product could not be removed")
+                    
+            
+            if status_code == 201 or status_code == 200:
+                ser.write(b"s")
+                return 0
+            
+            else :
+                ser.write(b"e")
+                return -2
+
         else:
             print("Product data could not be retreived")
-            return None
+            return -2
 
 
     def detecting_product_data(self):
@@ -257,5 +301,37 @@ class CameraHandler():
         print("Destructor: All OpenCV windows closed.")
 
     
+def send_product_to_server(barcode, date, name, ID, URL): #json format
+    data = {
+         "fridge": ID,
+         "barcode": f"{barcode}",
+         "expire_date": f"{date}",
+         "name": f"{name}"
+    }
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFTOKEN': '6S1eiOl9Kvu3MIIezl9EDYznqvILwaCRU9hNYkBVtu8Z0sH6NMTBkHp3ZAfrnqdS',
+        'Authorization': 'Token 62aa1bd2271eedd587232a3259f262fa5b578d88'
+    }
 
+    response = requests.post(URL, json=data, headers=headers)
+    # response.raise_for_status()
+    print(response.status_code)
+    # assert (response.status_code == 201), 'cannot connect to server'
+    return response.status_code
+
+
+def remove_product_from_server(barcode, date, name, ID, URL):
+    URL = URL + f"/{barcode}" + f"/{date}"
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFTOKEN': '6S1eiOl9Kvu3MIIezl9EDYznqvILwaCRU9hNYkBVtu8Z0sH6NMTBkHp3ZAfrnqdS',
+        'Authorization': 'Token 62aa1bd2271eedd587232a3259f262fa5b578d88'
+    }
+    print(URL)
+    response = requests.delete(URL, headers=headers)
+    print(response.status_code)
+    return response.status_code
 

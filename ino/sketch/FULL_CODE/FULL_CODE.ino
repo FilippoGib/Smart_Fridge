@@ -132,17 +132,17 @@ void loop()
     //date state: switch to server if receive message s (server response received) or switch to error if receive error
     else if (state == DATE_STATE) 
     {
-      if (cheeky == false) 
-      {
-        cheekyTimer = millis();
-        cheeky = true;
-      }
-      if (millis() - cheekyTimer > 1000) 
-      {
-        changeState(SERVER_STATE);
-        digitalWrite(SERVER_LED, HIGH);
-        cheeky = false;
-      }
+      // if (cheeky == false) 
+      // {
+      //   cheekyTimer = millis();
+      //   cheeky = true;
+      // }
+      // if (millis() - cheekyTimer > 1000) 
+      // {
+      //   changeState(SERVER_STATE);
+      //   digitalWrite(SERVER_LED, HIGH);
+      //   cheeky = false;
+      // }
       
       if (Serial.available() > 0) 
       {
